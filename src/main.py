@@ -11,10 +11,9 @@ class Item(BaseModel):
     price: float
     tax: Optional[float] = None
 
-class ModelName(str, Enum):
-    alexnet = "alexnet"
-    resnet = "resnet"
-    lenet = "lenet"
+class User(BaseModel):
+    username: str
+    full_name: Optional[str] = None
 
 app = FastAPI()
 
@@ -25,14 +24,14 @@ async def create_item(q: str = Query("fixedquery", min_length=3)):
         results.update({"q": q})
     return results
 
-@app.get("items/{item_id}")
-async def read_items(
-    item_id : int = Path(..., title= "The Id of the item to get")
-    q : Optional[str] = Query(None, alias = "item-query"),
+@app.put("items/{item_id}")
+async def update_item(
+    item_id: int , item:Item, user:User, importance: int = Body(...)
 ):
-    results = {"item_id" : item_id}
+    results = {"item_id": item_id}
     if q:
-        resulsts.update({"q": q})
-    
+        results.update({"q": q})
+    if item:
+        results.update({"item": item})
     return results
 
