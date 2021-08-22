@@ -1,14 +1,16 @@
 from fastapi import FastAPI, Query, Path
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from enum import Enum
 
 app = FastAPI()
 
 class Item(BaseModel):
     name : str
-    description : Optional[str] = None
-    price: float
+    description : Optional[str] = Field(
+        None, title = "The description of the item", max_length =300
+    )
+    price: float = Field(..., gt= 0, description = "The prcie must be greate than zero")
     tax: Optional[float] = None
 
 class User(BaseModel):
