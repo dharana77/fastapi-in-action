@@ -2,7 +2,7 @@ from fastapi import FastAPI, Query, Path
 from typing import List, Optional, Set
 from pydantic import BaseModel, Field
 from enum import Enum
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, Field
 
 app = FastAPI()
 
@@ -11,15 +11,20 @@ class Image(BaseModel):
     name: str
 
 class Item(BaseModel):
-    name : str
-    description : Optional[str] = Field(
-        None, title = "The description of the item", max_length =300
-    )
-    price: float = Field(..., gt= 0, description = "The prcie must be greate than zero")
-    tax: Optional[float] = None
-    tags: Set[str] = set()
-    image: Optional[List[Image]] = None
+    name : str = Field(..., example="Foo")
+    description: Optional[str] = Field(None, example="A very nice Item")
+    price: float = Field(..., example=35.4)
+    tax: Optional[float] = Field(None, example=3.2)
     
+    class Config:
+        schema_extra = {
+            "example":{
+                "name": "Foo",
+                "description": "A very nice Item",
+                "price": 35.4
+                "tax": 3.2
+            }
+        }
 class User(BaseModel):
     username: str
     full_name: Optional[str] = None
