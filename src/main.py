@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Path
+from fastapi import FastAPI, Query, Path, Header
 from typing import List, Optional, Set
 from pydantic import BaseModel, Field
 from enum import Enum
@@ -41,9 +41,9 @@ class offer(BaseModel):
 app = FastAPI()
 
 @app.post("/items")
-async def read_items(ads_id: Optional[str] = Cookie(None)):
-    return {"ads_id": ads_id}
-    
+async def read_items(strange_header: Optiona[str] = Header(None, convert_underscores=False)):
+    return {"stranger_header": starnge_header}
+
 
 @app.put("items/{item_id}")
 async def read_items(
