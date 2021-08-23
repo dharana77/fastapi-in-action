@@ -5,6 +5,7 @@ from enum import Enum
 from pydantic import BaseModel, HttpUrl, Field
 from datetime import datetime, time, timedelta
 from uuid import UUID
+from fastapi import Cookie, FastAPI
 
 app = FastAPI()
 
@@ -40,11 +41,9 @@ class offer(BaseModel):
 app = FastAPI()
 
 @app.post("/items")
-async def create_item(q: str = Query("fixedquery", min_length=3)):
-    results = {"items": [{"itesm_id": "Foo"}, {"item_id": "Bar"}]}
-    if q:
-        results.update({"q": q})
-    return results
+async def read_items(ads_id: Optional[str] = Cookie(None)):
+    return {"ads_id": ads_id}
+    
 
 @app.put("items/{item_id}")
 async def read_items(
