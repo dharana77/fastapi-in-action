@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Path, Header
+from fastapi import FastAPI, Query, Path, Header, Body
 from typing import List, Optional, Set
 from pydantic import BaseModel, Field
 from enum import Enum
@@ -18,32 +18,32 @@ class Item(BaseModel):
     description: Optional[str] = Field(None, example="A very nice Item")
     price: float = Field(..., example=35.4)
     tax: Optional[float] = Field(None, example=3.2)
+    tags: List[str] = []
 
-    class Config:
-        schema_extra = {
-            "example":{
-                "name": "Foo",
-                "description": "A very nice Item",
-                "price": 35.4
-                "tax": 3.2
-            }
-        }
 class User(BaseModel):
     username: str
     full_name: Optional[str] = None
     
-class offer(BaseModel):
+class Offer(BaseModel):
     name: str
     description: Optional[str] = None
     price: float
     items: List[Item]
 
+class UserIn(BaseModel):
+    username : str
+    password: str
+    full_name: Optional[str] = None
+
 app = FastAPI()
 
-@app.post("/items")
-async def read_items(strange_header: Optiona[str] = Header(None, convert_underscores=False)):
-    return {"stranger_header": starnge_header}
+@app.post("/items", response_model=Item)
+async def create_item(item: Item):
+    return item
 
+@app.post("/user", response_model=UserIn)
+async def create_user(user: UserIn):
+    return user
 
 @app.put("items/{item_id}")
 async def read_items(
@@ -74,5 +74,5 @@ async def create_multiple_images(images: List[Image]):
     return images
 
 @app.post("/index-weights/")
-async def create_index_weigths(weights: Dict[int, float]):
+async def create_index_weigths(weights: dict[int, float]):
     return weights
