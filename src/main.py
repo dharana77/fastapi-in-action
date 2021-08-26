@@ -1,24 +1,26 @@
-from fastapi import FastAPI, Query, Path, Header, Body
-from typing import List, Optional, Set
+from fastapi import FastAPI,
 from pydantic import BaseModel, Field
-from enum import Enum
-from pydantic import BaseModel, HttpUrl, Field
-from datetime import datetime, time, timedelta
-from uuid import UUID
 from fastapi import Cookie, FastAPI
+from typing import Union, List, Dict
 
-app = FastAPI()
+class BaseItem(BaseModel):
+    description: str
+    type: str
+
+class CarItem(BaseItem):
+    type = "car"
+
+class PlaneItem(BaseItem):
+    type = "plane"
+    size: int
 
 class Image(BaseModel):
     url: HttpUrl
     name: str
 
 class Item(BaseModel):
-    name : str = Field(..., example="Foo")
-    description: Optional[str] = Field(None, example="A very nice Item")
-    price: float = Field(..., example=35.4)
-    tax: Optional[float] = Field(None, example=3.2)
-    tags: List[str] = []
+    name: str
+    description:str
 
 class User(BaseModel):
     username: str
@@ -30,40 +32,44 @@ class Offer(BaseModel):
     price: float
     items: List[Item]
 
-class UserIn(BaseModel):
-    username : str
-    password: str
+class UserBase(BaseModel):
+    username: str
     full_name: Optional[str] = None
+
+class UserIn(UserBase):
+    password: str
+
+class UserOUt(UserBase):
+    pass
+
+class UserInDB(UserBase):
+    hashed_password: str
+
+def fake_password_hasher(raw_password: str):
+    return "supersecret" + raw_password
+
+def fake_sava_user(user_in: UserIn):
+    hashed_password = fake_password_hashser(user_in.password)
+    user_in_db = UserInDB(**user_in.dict(), hashed_password=hashed_password)
+    print("User save! not really.")
+    return user_in_db
+
 
 app = FastAPI()
 
-@app.post("/items", response_model=Item)
-async def create_item(item: Item):
-    return item
 
-@app.post("/user", response_model=UserIn)
+@app.post("/items", response_model=List[Item])
+async def read_items():
+    return items
+
+@app.post("/user", response_model=UserOut)
 async def create_user(user: UserIn):
-    return user
+    user_saved = fake_save_user(user_in)
+    return user_saved
 
-@app.put("items/{item_id}")
-async def read_items(
-    item_id: UUID,
-    start_datetime: Optional[datetime] = Body(None),
-    end_datetime : Optional[datetime] = Body(None),
-    repeat_at : Optional[time] = Body(None),
-    process_after: Optional[timedelta] = Body(None),
-):
-    start_process = start_datetime + process_after
-    duration = end_datetime - start_process
-    return {
-        "item_id": item_id,
-        "start_datetime": start_datetime,
-        "end_datetime": end_datetime,
-        "repeat_at": repeat_at,
-        "process_After": process_after,
-        "start_process": start_process,
-        "duartion": duartion,
-    }
+@app.put("items/{item_id}", response_model=Union[PlaneItem, CarItem])
+async def read_item(item_id : str):
+    return items[item_id]
 
 @app.post("/offers/")
 async def create_offer(offer: Offer):
@@ -76,3 +82,8 @@ async def create_multiple_images(images: List[Image]):
 @app.post("/index-weights/")
 async def create_index_weigths(weights: dict[int, float]):
     return weights
+
+@app.get("/keyword-weights/", response_model=Dict[str,float])
+async def read_keyword_weights():
+    return {"foo":2.3, "bar": 3.4}
+    
